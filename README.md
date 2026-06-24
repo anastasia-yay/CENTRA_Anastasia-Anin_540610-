@@ -42,6 +42,3 @@ Provinsi Jawa Tengah memiliki tingkat kerawanan bencana yang cukup tinggi, melip
 * **Database Spasial**: PostgreSQL + Ekstensi **PostGIS**
 * **Library Excel**: Maatwebsite/Excel v3
 * **Bundler & Style**: Bootstrap 5 + Bootstrap Icons + Blade Templating
-```bash
-git clone [https://github.com/username/centra-webgis.git](https://github.com/username/centra-webgis.git)
-cd centra-webgis
