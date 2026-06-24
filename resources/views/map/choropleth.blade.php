@@ -8,244 +8,202 @@
 @endsection
 
 @push('styles')
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-:root {
-    --cream     : #faf7f2;
-    --cream2    : #f3ede4;
-    --brown-dark: #2c1a0e;
-    --brown-mid : #5a3a22;
-    --earth     : #c4501a;
-    --earth-lt  : #e8734a;
-    --river     : #1a5276;
-    --amber     : #b7770d;
-    --border    : #d9cfc3;
-    --text-main : #2c1a0e;
-    --text-muted: #7a6552;
-    --navy      : #112240;
-}
+    #main-content {
+        padding: 0 !important;
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - var(--topbar-h));
+        overflow: hidden;
+    }
 
-body, .content-wrapper, #main-content {
-    font-family: 'Source Sans 3', sans-serif;
-}
+    /* ── Tab navigasi Choropleth / Heatmap ─────────── */
+    .map-tabs {
+        display: flex;
+        gap: .4rem;
+        padding: .6rem 1.25rem 0;
+        background: #fff;
+    }
+    .map-tab {
+        font-size: .8rem;
+        font-weight: 600;
+        padding: .5rem 1rem;
+        border-radius: 8px 8px 0 0;
+        color: #64748b;
+        text-decoration: none;
+        border: 1px solid transparent;
+        display: flex; align-items: center; gap: .4rem;
+    }
+    .map-tab.active {
+        background: #f8fafc;
+        color: #112240;
+        border-color: #e2e8f0;
+        border-bottom-color: #f8fafc;
+    }
+    .map-tab:hover:not(.active) { color: #112240; }
 
-#main-content {
-    padding: 0 !important;
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - var(--topbar-h));
-    overflow: hidden;
-}
+    /* ── Filter bar ─────────────────────────────── */
+    #filter-bar {
+        display: flex;
+        align-items: flex-end;
+        gap: .75rem;
+        padding: .75rem 1.25rem;
+        background: #fff;
+        border-bottom: 1px solid #e2e8f0;
+        flex-wrap: wrap;
+        z-index: 900;
+        box-shadow: 0 1px 4px rgba(0,0,0,.05);
+    }
+    #filter-bar label {
+        font-size: .75rem;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        margin-bottom: .25rem;
+        display: block;
+    }
+    #filter-bar select {
+        font-size: .875rem;
+        min-width: 160px;
+        border-color: #cbd5e1;
+        border-radius: 6px;
+    }
+    #filter-bar select:focus { border-color: var(--accent, #e84c1e); box-shadow: 0 0 0 3px rgba(232,76,30,.1); }
+    .btn-filter {
+        background: var(--accent, #e84c1e);
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: .45rem 1.1rem;
+        font-size: .875rem;
+        font-weight: 600;
+        display: flex; align-items: center; gap: .4rem;
+        cursor: pointer;
+        transition: background .15s;
+    }
+    .btn-filter:hover { background: var(--accent-lt, #ff6b3d); }
 
-/* ── Tab navigasi ───────────────────────────────── */
-.map-tabs {
-    display: flex;
-    gap: .4rem;
-    padding: .6rem 1.25rem 0;
-    background: var(--cream);
-    border-bottom: 1px solid var(--border);
-}
-.map-tab {
-    font-size: .8rem;
-    font-weight: 700;
-    padding: .5rem 1.1rem;
-    border-radius: 8px 8px 0 0;
-    color: var(--text-muted);
-    text-decoration: none;
-    border: 1px solid transparent;
-    display: flex; align-items: center; gap: .4rem;
-    letter-spacing: .02em;
-    transition: color .15s;
-}
-.map-tab.active {
-    background: #fff;
-    color: var(--brown-dark);
-    border-color: var(--border);
-    border-bottom-color: #fff;
-}
-.map-tab:hover:not(.active) { color: var(--earth); }
+    .btn-export {
+        background: #112240;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: .45rem 1.1rem;
+        font-size: .875rem;
+        font-weight: 600;
+        display: flex; align-items: center; gap: .4rem;
+        cursor: pointer;
+        transition: background .15s;
+        margin-left: auto;
+    }
+    .btn-export:hover { background: #1d3a6e; }
+    .btn-export:disabled { opacity: .65; cursor: not-allowed; }
 
-/* ── Filter bar ─────────────────────────────────── */
-#filter-bar {
-    display: flex;
-    align-items: flex-end;
-    gap: .75rem;
-    padding: .75rem 1.25rem;
-    background: #fff;
-    border-bottom: 1px solid var(--border);
-    flex-wrap: wrap;
-    z-index: 900;
-    box-shadow: 0 1px 6px rgba(44,26,14,.06);
-}
-#filter-bar label {
-    font-size: .68rem;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: .08em;
-    margin-bottom: .3rem;
-    display: block;
-}
-#filter-bar select {
-    font-size: .86rem;
-    min-width: 170px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--cream);
-    color: var(--text-main);
-    font-family: 'Source Sans 3', sans-serif;
-    padding: .4rem .65rem;
-    transition: border-color .15s, box-shadow .15s;
-}
-#filter-bar select:focus {
-    outline: none;
-    border-color: var(--earth);
-    box-shadow: 0 0 0 3px rgba(196,80,26,.12);
-}
+    /* ── Map export wrapper ────────────────────────── */
+    .map-export-wrapper {
+        position: relative;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    #map { flex: 1; width: 100%; }
 
-.btn-filter {
-    background: var(--earth);
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    padding: .45rem 1.1rem;
-    font-size: .82rem;
-    font-weight: 700;
-    font-family: 'Source Sans 3', sans-serif;
-    display: flex; align-items: center; gap: .4rem;
-    cursor: pointer;
-    transition: background .15s;
-}
-.btn-filter:hover { background: var(--earth-lt, #e8734a); }
+    .map-title-overlay {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        z-index: 950;
+        background: rgba(255,255,255,.92);
+        padding: .6rem 1.1rem;
+        border-radius: 8px;
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+        color: #112240;
+        box-shadow: 0 2px 10px rgba(0,0,0,.12);
+        max-width: 70%;
+    }
+    .map-title-overlay small {
+        display: block;
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        font-size: .72rem;
+        color: #64748b;
+        margin-top: .15rem;
+    }
 
-.btn-export {
-    background: var(--navy);
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    padding: .45rem 1.1rem;
-    font-size: .82rem;
-    font-weight: 700;
-    font-family: 'Source Sans 3', sans-serif;
-    display: flex; align-items: center; gap: .4rem;
-    cursor: pointer;
-    transition: background .15s;
-    margin-left: auto;
-}
-.btn-export:hover { background: #1d3a6e; }
-.btn-export:disabled { opacity: .6; cursor: not-allowed; }
+    /* Sembunyikan kontrol Leaflet yang tidak perlu saat proses export */
+    .map-export-wrapper.exporting .leaflet-control-zoom,
+    .map-export-wrapper.exporting .leaflet-control-layers,
+    .map-export-wrapper.exporting .leaflet-control-scale,
+    .map-export-wrapper.exporting .leaflet-control-attribution {
+        display: none !important;
+    }
 
-/* ── Map export wrapper ─────────────────────────── */
-.map-export-wrapper {
-    position: relative;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-#map { flex: 1; width: 100%; }
+    /* ── Spinner overlay ────────────────────────── */
+    #map-spinner {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+        background: rgba(255,255,255,.85);
+        border-radius: 12px;
+        padding: 1.2rem 1.8rem;
+        display: none;
+        align-items: center; gap: .75rem;
+        font-weight: 600; font-size: .875rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,.12);
+    }
+    #map-spinner.show { display: flex; }
 
-.map-title-overlay {
-    position: absolute;
-    top: 12px; left: 12px;
-    z-index: 950;
-    background: rgba(250,247,242,.95);
-    padding: .6rem 1.1rem;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    font-family: 'Playfair Display', serif;
-    font-weight: 700;
-    font-size: .95rem;
-    color: var(--brown-dark);
-    box-shadow: 0 2px 10px rgba(44,26,14,.12);
-    max-width: 70%;
-}
-.map-title-overlay small {
-    display: block;
-    font-family: 'Source Sans 3', sans-serif;
-    font-weight: 600;
-    font-size: .7rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: .07em;
-    margin-top: .15rem;
-}
+    /* ── Leaflet popup custom ───────────────────── */
+    .leaflet-popup-content-wrapper {
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        padding: 0;
+        overflow: hidden;
+    }
+    .leaflet-popup-content { margin: 0; min-width: 200px; }
+    .popup-header {
+        background: var(--brand-800, #112240);
+        color: #fff;
+        padding: .6rem .9rem;
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: .9rem;
+    }
+    .popup-body { padding: .6rem .9rem; font-size: .82rem; }
+    .popup-row { display: flex; justify-content: space-between; gap: .5rem; margin-bottom: .3rem; }
+    .popup-label { color: #64748b; }
+    .popup-val { font-weight: 600; }
 
-.map-export-wrapper.exporting .leaflet-control-zoom,
-.map-export-wrapper.exporting .leaflet-control-layers,
-.map-export-wrapper.exporting .leaflet-control-scale,
-.map-export-wrapper.exporting .leaflet-control-attribution {
-    display: none !important;
-}
-
-/* ── Spinner ────────────────────────────────────── */
-#map-spinner {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1000;
-    background: rgba(250,247,242,.9);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1.1rem 1.6rem;
-    display: none;
-    align-items: center; gap: .7rem;
-    font-weight: 600; font-size: .85rem;
-    color: var(--brown-dark);
-    box-shadow: 0 4px 20px rgba(44,26,14,.12);
-}
-#map-spinner.show { display: flex; }
-
-/* ── Leaflet popup ──────────────────────────────── */
-.leaflet-popup-content-wrapper {
-    border-radius: 10px;
-    box-shadow: 0 4px 20px rgba(44,26,14,.15);
-    padding: 0; overflow: hidden;
-    border: 1px solid var(--border);
-}
-.leaflet-popup-content { margin: 0; min-width: 200px; }
-.popup-header {
-    background: var(--brown-dark);
-    color: #fff;
-    padding: .6rem .9rem;
-    font-family: 'Playfair Display', serif;
-    font-weight: 700;
-    font-size: .9rem;
-}
-.popup-body  { padding: .6rem .9rem; font-size: .82rem; background: #fff; }
-.popup-row   { display: flex; justify-content: space-between; gap: .5rem; margin-bottom: .3rem; }
-.popup-label { color: var(--text-muted); }
-.popup-val   { font-weight: 700; color: var(--brown-dark); }
-
-/* ── Legend ─────────────────────────────────────── */
-.leaflet-legend {
-    background: rgba(250,247,242,.96);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: .75rem 1rem;
-    font-size: .78rem;
-    font-family: 'Source Sans 3', sans-serif;
-    box-shadow: 0 2px 10px rgba(44,26,14,.1);
-    line-height: 1.7;
-    min-width: 165px;
-}
-.leaflet-legend h6 {
-    font-family: 'Playfair Display', serif;
-    font-size: .8rem;
-    font-weight: 700;
-    color: var(--brown-dark);
-    margin-bottom: .5rem;
-    padding-bottom: .3rem;
-    border-bottom: 1px solid var(--border);
-}
-.legend-swatch {
-    display: inline-block;
-    width: 13px; height: 13px;
-    border-radius: 3px;
-    margin-right: 6px;
-    vertical-align: middle;
-}
+    /* ── Legend ─────────────────────────────────── */
+    .leaflet-legend {
+        background: #fff;
+        border-radius: 8px;
+        padding: .75rem 1rem;
+        font-size: .78rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,.12);
+        line-height: 1.6;
+        min-width: 160px;
+    }
+    .leaflet-legend h6 {
+        font-size: .75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: #334155;
+        margin-bottom: .5rem;
+    }
+    .legend-swatch {
+        display: inline-block;
+        width: 14px; height: 14px;
+        border-radius: 3px;
+        margin-right: 6px;
+        vertical-align: middle;
+    }
 </style>
 @endpush
 
@@ -265,7 +223,7 @@ body, .content-wrapper, #main-content {
 <div id="filter-bar">
     <div>
         <label>Jenis Bencana</label>
-        <select id="f-jenis">
+        <select id="f-jenis" class="form-select form-select-sm">
             <option value="">Semua Jenis</option>
             @foreach($disasterTypes as $type)
                 <option value="{{ $type->id }}">{{ $type->nama_bencana }}</option>
@@ -281,13 +239,14 @@ body, .content-wrapper, #main-content {
     </div>
 
     <button class="btn-export" id="btnExportMap">
-        <i class="bi bi-download"></i> Export PNG
+        <i class="bi bi-download"></i> Export Map (PNG)
     </button>
 </div>
 
-{{-- ── Map ─────────────────────────────────────────── --}}
+{{-- ── Map container + export wrapper ─────────────── --}}
 <div class="map-export-wrapper" id="mapExportArea">
 
+    {{-- Judul overlay, otomatis berubah sesuai filter aktif --}}
     <div id="exportTitle" class="map-title-overlay">
         Choropleth Total Kejadian Bencana
         <small id="exportSubtitle">Semua Jenis Bencana</small>
@@ -296,7 +255,7 @@ body, .content-wrapper, #main-content {
     <div id="map"></div>
 
     <div id="map-spinner">
-        <div class="spinner-border spinner-border-sm" style="color:var(--earth)"></div>
+        <div class="spinner-border spinner-border-sm text-danger"></div>
         Memuat data…
     </div>
 </div>
@@ -307,64 +266,122 @@ body, .content-wrapper, #main-content {
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
-const map = L.map('map', { zoomControl: false }).setView([-7.15, 110.15], 8);
+/* ════════════════════════════════════════════════════
+   WEBGIS KEBENCANAAN — Halaman Choropleth
+════════════════════════════════════════════════════ */
+
+// ── 1. Inisialisasi peta ──────────────────────────
+// preferCanvas: true memaksa Leaflet merender vector layer (polygon
+// choropleth) ke <canvas> raster, bukan <svg> dengan CSS transform
+// terpisah dari tile-pane. Inilah akar masalah "polygon bergeser ke
+// barat laut" saat di-screenshot html2canvas — SVG overlay-pane punya
+// transform sendiri yang sering salah dihitung ulang oleh html2canvas,
+// sedangkan heatmap (leaflet.heat) sejak awal sudah berupa <canvas>
+// tunggal sehingga selalu presisi. Dengan preferCanvas, choropleth
+// kini memakai mekanisme render yang sama seperti heatmap.
+const map = L.map('map', { zoomControl: false, preferCanvas: true }).setView([-7.15, 110.15], 8);
 L.control.zoom({ position: 'bottomleft' }).addTo(map);
 
+// ── 2. Basemaps ───────────────────────────────────
 const basemaps = {
     'OpenStreetMap': L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19, crossOrigin: true,
+        maxZoom: 19,
+        crossOrigin: true,
     }),
     'Google Satellite': L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-        attribution: '© Google', maxZoom: 20, crossOrigin: true,
+        attribution: '© Google',
+        maxZoom: 20,
+        crossOrigin: true,
     }),
     'Google Hybrid': L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
-        attribution: '© Google', maxZoom: 20, crossOrigin: true,
+        attribution: '© Google',
+        maxZoom: 20,
+        crossOrigin: true,
     }),
     'CartoDB Light': L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '© CartoDB', maxZoom: 19, crossOrigin: true,
+        attribution: '© CartoDB',
+        maxZoom: 19,
+        crossOrigin: true,
     }),
 };
 basemaps['OpenStreetMap'].addTo(map);
+
 L.control.layers(basemaps, {}, { position: 'topright', collapsed: true }).addTo(map);
 L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(map);
 
+// ── 3. State layer ────────────────────────────────
 let choroplethLayer = null;
 let currentBreaks   = [];
 
+// ── 4. Spinner helper ─────────────────────────────
 let loadingCount = 0;
-function showSpinner() { loadingCount++; document.getElementById('map-spinner').classList.add('show'); }
-function hideSpinner() { if (--loadingCount <= 0) { loadingCount = 0; document.getElementById('map-spinner').classList.remove('show'); } }
-
-function getColor(value, breaks) {
-    if (value === 0)        return '#808080';
-    if (value >= breaks[5]) return '#800026';
-    if (value >= breaks[4]) return '#BD0026';
-    if (value >= breaks[3]) return '#E31A1C';
-    if (value >= breaks[2]) return '#FC4E2A';
-    return '#FD8D3C';
+function showSpinner() {
+    loadingCount++;
+    document.getElementById('map-spinner').classList.add('show');
+}
+function hideSpinner() {
+    if (--loadingCount <= 0) {
+        loadingCount = 0;
+        document.getElementById('map-spinner').classList.remove('show');
+    }
 }
 
+// ── 5. Warna choropleth (Equal Interval Dinamis) ──
+// Klasifikasi: 1 kelas abu-abu (nilai 0) + 5 kelas Equal Interval (nilai > 0)
+// breaks = [0, minPositive, b2, b3, b4, b5, maxPositive] → 7 elemen
+function getColor(value, breaks)
+{
+    if (value === 0)
+        return '#808080';
+
+    return value >= breaks[5] ? '#800026' :
+           value >= breaks[4] ? '#BD0026' :
+           value >= breaks[3] ? '#E31A1C' :
+           value >= breaks[2] ? '#FC4E2A' :
+                                 '#FD8D3C';
+}
+
+// ── 6. Legend Choropleth (bottomright) ────────────
 const choroplethLegend = L.control({ position: 'bottomright' });
-choroplethLegend.onAdd = function () {
+
+choroplethLegend.onAdd = function ()
+{
     this._div = L.DomUtil.create('div', 'leaflet-legend');
     return this._div;
 };
+
 choroplethLegend.addTo(map);
 
-function updateChoroplethLegend(breaks) {
+function updateChoroplethLegend(breaks)
+{
     if (!choroplethLegend._div) return;
-    const colors = ['#FD8D3C', '#FC4E2A', '#E31A1C', '#BD0026', '#800026'];
+
     let html = '<h6>Choropleth</h6>';
-    html += `<span class="legend-swatch" style="background:#808080;border:1px solid #d9cfc3"></span>
-             0 <em style="color:#7a6552">(tidak ada)</em><br>`;
-    for (let i = 1; i <= 5; i++) {
-        html += `<span class="legend-swatch" style="background:${colors[i-1]}"></span>
-                 ${Math.round(breaks[i])}&ndash;${Math.round(breaks[i+1])}<br>`;
+
+    html += `
+        <span class="legend-swatch" style="background:#808080"></span>
+        0 (Tidak Ada Kejadian)
+        <br>
+    `;
+
+    const colors = ['#FD8D3C', '#FC4E2A', '#E31A1C', '#BD0026', '#800026'];
+
+    for (let i = 1; i <= 5; i++)
+    {
+        html += `
+            <span class="legend-swatch" style="background:${colors[i - 1]}"></span>
+            ${Math.round(breaks[i])}
+            &ndash;
+            ${Math.round(breaks[i + 1])}
+            <br>
+        `;
     }
+
     choroplethLegend._div.innerHTML = html;
 }
 
+// ── 7. Load Choropleth ────────────────────────────
 function loadChoropleth() {
     const jenis = document.getElementById('f-jenis').value;
     showSpinner();
@@ -377,25 +394,43 @@ function loadChoropleth() {
             const values         = data.features.map(f => Number(f.properties.total_kejadian || 0));
             const positiveValues = values.filter(v => v > 0);
 
-            if (positiveValues.length === 0) {
-                currentBreaks = [0,0,0,0,0,0,0];
-            } else {
-                const minPos = Math.min(...positiveValues);
-                const maxPos = Math.max(...positiveValues);
-                const step   = (maxPos - minPos) / 5 || 1;
-                currentBreaks = [0, minPos, minPos+step, minPos+step*2, minPos+step*3, minPos+step*4, maxPos];
+            if (positiveValues.length === 0)
+            {
+                currentBreaks = [0, 0, 0, 0, 0, 0, 0];
+            }
+            else
+            {
+                const minPositive = Math.min(...positiveValues);
+                const maxPositive = Math.max(...positiveValues);
+                const interval    = (maxPositive - minPositive) / 5 || 1;
+
+                currentBreaks = [
+                    0,
+                    minPositive,
+                    minPositive + interval,
+                    minPositive + interval * 2,
+                    minPositive + interval * 3,
+                    minPositive + interval * 4,
+                    maxPositive
+                ];
             }
 
             updateChoroplethLegend(currentBreaks);
 
             choroplethLayer = L.geoJSON(data, {
+                // renderer: L.canvas() — jaminan ganda selain preferCanvas
+                // pada inisialisasi map, memastikan layer ini pasti
+                // digambar ke <canvas>, bukan <svg>. Inilah perbaikan
+                // utama untuk masalah "polygon bergeser saat export PNG".
+                renderer: L.canvas(),
+
                 style: f => ({
                     fillColor  : getColor(f.properties.total_kejadian ?? 0, currentBreaks),
                     weight     : 1,
                     opacity    : 1,
-                    color      : '#fff',
-                    fillOpacity: 0.80,
-                    dashArray  : (f.properties.total_kejadian ?? 0) === 0 ? '3' : null,
+                    color      : '#FFFFFF',
+                    fillOpacity: 0.8,
+                    dashArray  : (f.properties.total_kejadian ?? 0) === 0 ? '3' : null
                 }),
                 onEachFeature: (f, layer) => {
                     const p = f.properties;
@@ -411,66 +446,82 @@ function loadChoropleth() {
                                 <span class="popup-val">${p.jenis_wilayah ?? '—'}</span>
                             </div>
                         </div>`);
-                    layer.on('mouseover', () => layer.setStyle({ weight: 2.5, color: '#5a3a22' }));
+                    // Catatan: efek hover (mouseover/mouseout) di bawah ini
+                    // tetap berfungsi normal pada Canvas renderer — Leaflet
+                    // tetap mendeteksi event mouse pada path canvas via hit
+                    // detection internalnya sendiri, bukan event DOM SVG.
+                    layer.on('mouseover', () => layer.setStyle({ weight: 3, color: '#334155' }));
                     layer.on('mouseout',  () => choroplethLayer.resetStyle(layer));
                 },
             });
 
             choroplethLayer.addTo(map);
-            if (choroplethLayer.getLayers().length > 0) map.fitBounds(choroplethLayer.getBounds());
+
+            if (choroplethLayer.getLayers().length > 0) {
+                map.fitBounds(choroplethLayer.getBounds());
+            }
         })
         .catch(e => console.error('Choropleth error:', e))
         .finally(hideSpinner);
 }
 
+// ── 8. Judul overlay dinamis (untuk hasil export) ─
 function updateExportTitle() {
-    const select = document.getElementById('f-jenis');
-    document.getElementById('exportSubtitle').innerText = select.options[select.selectedIndex].text;
+    const select   = document.getElementById('f-jenis');
+    const jenisTxt = select.options[select.selectedIndex].text;
+
+    document.getElementById('exportSubtitle').innerText = jenisTxt;
 }
 
-document.getElementById('btnFilter').addEventListener('click', () => { loadChoropleth(); updateExportTitle(); });
+// ── 9. Filter button ──────────────────────────────
+document.getElementById('btnFilter').addEventListener('click', () => {
+    loadChoropleth();
+    updateExportTitle();
+});
 
-let originalBasemapKey = null;
-function switchToExportBasemap() {
-    originalBasemapKey = Object.keys(basemaps).find(k => map.hasLayer(basemaps[k]));
-    if (originalBasemapKey !== 'CartoDB Light') {
-        map.removeLayer(basemaps[originalBasemapKey]);
-        basemaps['CartoDB Light'].addTo(map);
-    } else { originalBasemapKey = null; }
-}
-function restoreBasemap() {
-    if (originalBasemapKey) {
-        map.removeLayer(basemaps['CartoDB Light']);
-        basemaps[originalBasemapKey].addTo(map);
-        originalBasemapKey = null;
-    }
-}
-
+// ── 10. Export Map ke PNG ─────────────────────────
+// Basemap export tetap dipertahankan apa adanya (OpenStreetMap) karena
+// akar masalah pergeseran BUKAN pada basemap/CORS, melainkan pada
+// renderer SVG vs Canvas di atas. Tidak perlu lagi switch basemap
+// khusus untuk proses export.
 document.getElementById('btnExportMap').addEventListener('click', function () {
-    const btn = this;
+    const btn     = this;
     const wrapper = document.getElementById('mapExportArea');
+
     btn.disabled  = true;
     btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Mengekspor...';
+
     wrapper.classList.add('exporting');
-    switchToExportBasemap();
+
+    // map.invalidateSize() + delay kecil memastikan Leaflet sudah
+    // menyelesaikan repaint pane sebelum html2canvas membaca DOM,
+    // mencegah snapshot diambil di tengah-tengah animasi/transisi pane.
+    map.invalidateSize();
+
     setTimeout(() => {
-        html2canvas(wrapper, { useCORS: true, scale: 2, backgroundColor: '#ffffff' })
-            .then(canvas => {
-                const link    = document.createElement('a');
-                link.download = 'choropleth-kejadian-bencana.png';
-                link.href     = canvas.toDataURL('image/png');
-                link.click();
-            })
-            .catch(e => console.error('Export error:', e))
-            .finally(() => {
-                wrapper.classList.remove('exporting');
-                restoreBasemap();
-                btn.disabled  = false;
-                btn.innerHTML = '<i class="bi bi-download"></i> Export PNG';
-            });
+        html2canvas(wrapper, {
+            useCORS        : true,
+            scale          : 2,
+            backgroundColor: '#ffffff',
+        }).then(canvas => {
+            const link    = document.createElement('a');
+            link.download = 'choropleth-kejadian-bencana.png';
+            link.href     = canvas.toDataURL('image/png');
+            link.click();
+
+            wrapper.classList.remove('exporting');
+            btn.disabled  = false;
+            btn.innerHTML = '<i class="bi bi-download"></i> Export Map (PNG)';
+        }).catch(err => {
+            console.error('Export error:', err);
+            wrapper.classList.remove('exporting');
+            btn.disabled  = false;
+            btn.innerHTML = '<i class="bi bi-download"></i> Export Map (PNG)';
+        });
     }, 300);
 });
 
+// ── 11. Initial load ──────────────────────────────
 loadChoropleth();
 updateExportTitle();
 </script>

@@ -229,9 +229,6 @@ body, .content-wrapper, #main-content { font-family: 'Source Sans 3', sans-serif
             <a href="{{ route('disaster-events.export.excel') }}" class="topo-btn topo-btn-outline green">
                 <i class="bi bi-file-earmark-excel"></i> Export Excel
             </a>
-            <a href="{{ route('disaster-events.export.pdf') }}" class="topo-btn topo-btn-outline red">
-                <i class="bi bi-file-earmark-pdf"></i> Export PDF
-            </a>
             <a href="{{ route('disaster-events.create') }}" class="topo-btn topo-btn-primary">
                 <i class="bi bi-plus-circle"></i> Tambah Kejadian
             </a>

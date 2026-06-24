@@ -6,7 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\RegionController;
-use App\Http\Controllers\DisasterTypeController;
+// use App\Http\Controllers\DisasterTypeController;
 use App\Http\Controllers\DisasterEventController;
 
 /*

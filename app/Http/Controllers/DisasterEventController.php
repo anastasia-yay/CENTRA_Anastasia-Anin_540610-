@@ -29,8 +29,8 @@ class DisasterEventController extends Controller
         ])->latest('tanggal_kejadian')->get();
 
         $disasterTypes = DisasterType::orderBy('nama_bencana')->get();
-        $region       = Region::orderBy('nama_wilayah')->get();
-        $riskLevel    = RiskLevel::orderBy('nama_tingkat')->get();
+        $region        = Region::orderBy('nama_wilayah')->get();
+        $riskLevel     = RiskLevel::orderBy('nama_tingkat')->get();
 
         return view('disaster-events.index', compact(
             'events',
@@ -46,8 +46,8 @@ class DisasterEventController extends Controller
     public function create(): View
     {
         $disasterTypes = DisasterType::orderBy('nama_bencana')->get();
-        $region       = Region::orderBy('nama_wilayah')->get();
-        $riskLevel    = RiskLevel::orderBy('nama_tingkat')->get();
+        $region        = Region::orderBy('nama_wilayah')->get();
+        $riskLevel     = RiskLevel::orderBy('nama_tingkat')->get();
 
         return view('disaster-events.create', compact(
             'disasterTypes',
@@ -113,8 +113,8 @@ class DisasterEventController extends Controller
     {
         $event = $kejadian;
         $disasterTypes = DisasterType::orderBy('nama_bencana')->get();
-        $region       = Region::orderBy('nama_wilayah')->get();
-        $riskLevel    = RiskLevel::orderBy('nama_tingkat')->get();
+        $region        = Region::orderBy('nama_wilayah')->get();
+        $riskLevel     = RiskLevel::orderBy('nama_tingkat')->get();
 
         $event->load(['region', 'disasterTypes', 'riskLevel']);
 
@@ -145,6 +145,7 @@ class DisasterEventController extends Controller
         DB::transaction(function () use ($validated, $event) {
             $validated['status'] = $validated['status'] ?? 'ACC';
             $event->update($validated);
+
             // Perbarui geom_actual jika region berubah
             DB::statement(
                 "UPDATE disaster_events
@@ -174,7 +175,7 @@ class DisasterEventController extends Controller
     }
 
     // ──────────────────────────────────────────────────────────────
-    // Import / Export
+    // Import / Export Excel
     // ──────────────────────────────────────────────────────────────
 
     /**
@@ -207,21 +208,5 @@ class DisasterEventController extends Controller
     public function exportExcel()
     {
         return Excel::download(new DisasterEventsExport, 'kejadian-bencana.xlsx');
-    }
-
-    /**
-     * GET /kejadian/export/pdf
-     * (Gunakan barryvdh/laravel-dompdf atau snappy)
-     */
-    public function exportPdf()
-    {
-        $events = DisasterEvent::with(['region', 'disasterType', 'riskLevel'])
-            ->latest('tanggal_kejadian')
-            ->get();
-
-        $pdf = app('dompdf.wrapper')
-            ->loadView('disaster-events.pdf', compact('events'));
-
-        return $pdf->download('kejadian-bencana.pdf');
     }
 }
